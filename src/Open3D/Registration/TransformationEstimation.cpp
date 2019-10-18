@@ -81,15 +81,29 @@ Eigen::Matrix4d TransformationEstimationPointToPlane::ComputeTransformation(
     if (corres.empty() || target.HasNormals() == false)
         return Eigen::Matrix4d::Identity();
 
-    auto compute_jacobian_and_residual = [&](int i, Eigen::Vector6d &J_r,
-                                             double &r) {
-        const Eigen::Vector3d &vs = source.points_[corres[i][0]];
-        const Eigen::Vector3d &vt = target.points_[corres[i][1]];
-        const Eigen::Vector3d &nt = target.normals_[corres[i][1]];
-        r = (vs - vt).dot(nt);
-        J_r.block<3, 1>(0, 0) = vs.cross(nt);
-        J_r.block<3, 1>(3, 0) = nt;
-    };
+    std::function<void(int, Eigen::Vector6d&, double &)> compute_jacobian_and_residual;
+    
+    if (translation_only) {
+        compute_jacobian_and_residual = [&](
+                int i, Eigen::Vector6d &J_r, double &r) {
+            const Eigen::Vector3d &vs = source.points_[corres[i][0]];
+            const Eigen::Vector3d &vt = target.points_[corres[i][1]];
+            const Eigen::Vector3d &nt = target.normals_[corres[i][1]];
+            r = (vs - vt).dot(nt);
+            J_r.block<3, 1>(0, 0) = Eigen::Vector3d::Zero();
+            J_r.block<3, 1>(3, 0) = nt;
+        };
+    } else {
+        compute_jacobian_and_residual = [&](
+                int i, Eigen::Vector6d &J_r, double &r) {
+            const Eigen::Vector3d &vs = source.points_[corres[i][0]];
+            const Eigen::Vector3d &vt = target.points_[corres[i][1]];
+            const Eigen::Vector3d &nt = target.normals_[corres[i][1]];
+            r = (vs - vt).dot(nt);
+            J_r.block<3, 1>(0, 0) = vs.cross(nt);
+            J_r.block<3, 1>(3, 0) = nt;
+        };
+    }
 
     Eigen::Matrix6d JTJ;
     Eigen::Vector6d JTr;

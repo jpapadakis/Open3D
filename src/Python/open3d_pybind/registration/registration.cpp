@@ -232,8 +232,10 @@ Sets :math:`c = 1` if ``with_scaling`` is ``False``.
             te_p2l(m, "TransformationEstimationPointToPlane",
                    "Class to estimate a transformation for point to plane "
                    "distance.");
-    py::detail::bind_default_constructor<
-            registration::TransformationEstimationPointToPlane>(te_p2l);
+    te_p2l.def(py::init([](bool translation_only) {
+                return new registration::TransformationEstimationPointToPlane(translation_only);
+            }),
+            "translation_only"_a = false);
     py::detail::bind_copy_functions<
             registration::TransformationEstimationPointToPlane>(te_p2l);
     te_p2l.def(

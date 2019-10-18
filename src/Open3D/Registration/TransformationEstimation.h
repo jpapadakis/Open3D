@@ -129,7 +129,7 @@ private:
 class TransformationEstimationPointToPlane : public TransformationEstimation {
 public:
     /// \brief Default Constructor.
-    TransformationEstimationPointToPlane() {}
+    TransformationEstimationPointToPlane(bool translation_only = false) : translation_only(translation_only) {}
     ~TransformationEstimationPointToPlane() override {}
 
 public:
@@ -144,6 +144,8 @@ public:
             const geometry::PointCloud &source,
             const geometry::PointCloud &target,
             const CorrespondenceSet &corres) const override;
+    
+    bool translation_only = false;
 
 private:
     const TransformationEstimationType type_ =
